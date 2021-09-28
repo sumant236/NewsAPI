@@ -47,10 +47,18 @@
             left: 0;
             right: 0;
         }
+        .visible{
+            display: block;
+        }
+        .hidden{
+            display: none;
+        }
     </style>
 </head>
 <body>
     <header>
+        <input type="text" id="input" placeholder="Search Box">
+        <button id="search">Search</button>
         <p id="sports" style="cursor: pointer;">SPORTS</p>
         <p id="entertainment" style="cursor: pointer;">ENTERTAINMENT</p>
         <p id="tech" style="margin-right: 50px; cursor: pointer;">TECHNOLOGY</p>
@@ -61,8 +69,11 @@
         <div id="container">
 
         </div>
+        <div id="pagination" style="cursor: pointer;"></div>
     </form>
     <script>
+        let current = 1;
+        let limit = 5;
         window.addEventListener('load', function () {
             var sports = document.getElementById('sports');
             sports.addEventListener('click', sportsPage)
@@ -71,7 +82,46 @@
             var tech = document.getElementById('tech');
             tech.addEventListener('click', techPage)
             fetchData()
+            createPagination();
+            var pagination = document.getElementById('pagination');
+            pagination.addEventListener('click', handlePage)
+            var btn = document.getElementById('search');
+            btn.addEventListener('click', fetchData)
         })
+
+        function handlePage(e) {
+            try{
+                console.log(parseInt(event.target.name))
+                const pageNumber = parseInt(event.target.name)
+                current = pageNumber;
+                fetchData();
+                createPagination();
+            }
+            catch(e){
+                
+            }
+            e.preventDefault()
+        }
+
+        function createPagination() {
+            var div = document.getElementById('pagination');
+            div.innerHTML = '';
+            var previous = document.createElement('button');
+            previous.textContent = "Previous";
+            previous.name = current-1;
+            
+            var currentPage = document.createElement('button');
+            currentPage.textContent = current;
+            currentPage.name = current;
+            if(current==1){
+                previous.disabled = true
+            }
+
+            var next = document.createElement('button');
+            next.textContent = "Next";
+            next.name = current+1;
+            div.append(previous, currentPage, next);
+        }
 
         function entertainmentPage() {
             window.location.href = "entertainment.html"
@@ -86,21 +136,26 @@
         }
 
         function fetchData() {
-            fetch('https://newsapi.org/v2/top-headlines?country=in&apiKey=e88a3ca368aa40d6bfd6144b856d172e')
+            current = current || 1;
+            limit = limit || 3;
+            var topic = document.getElementById('input').value;
+            fetch(`https://newsapi.org/v2/everything?q=${topic}&page=${current}&pageSize=${limit}&apiKey=e88a3ca368aa40d6bfd6144b856d172e`)
             .then(function (response) {
                 return response.json();
             })
             .then(function (response) {
+                console.log(response)
                 getNews(response.articles);
             })
             .catch(function (reject) {
-                console.log('Request rejected')
+                console.log(reject)
             })
             event.preventDefault();
         }
 
         function getNews(data) {
             const cont = document.getElementById('container');
+            cont.innerHTML = '';
             console.log(data)
             for(i=0; i < 10; i++ ){
                 var div = document.createElement('div');
